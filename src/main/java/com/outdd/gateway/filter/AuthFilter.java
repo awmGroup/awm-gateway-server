@@ -16,7 +16,7 @@ import reactor.core.publisher.Mono;
 
 @Slf4j
 @Component
-public class AuthFilter1 implements GlobalFilter, Ordered {
+public class AuthFilter implements GlobalFilter, Ordered {
 
 	private static final String AUTHORIZE_TOKEN = "token";
 	private static final String AUTHORIZE_UID = "uid";
