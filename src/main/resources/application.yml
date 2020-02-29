@@ -1,0 +1,48 @@
+spring:
+  cloud:
+    gateway:
+      filter:
+        remove-non-proxy-headers:
+          headers:
+          - dummy
+      routes:
+      - id:  oauths
+        # 重点！/info必须使用http进行转发，lb代表从注册中心获取服务
+        uri: lb://OAUTH-SERVER
+        predicates:
+        # 重点！转发该路径！,/userapi/**,
+          - Path=/oauths/**
+        filters:
+          - StripPrefix=1
+        # http://localhost:6601/userapi/user/users/2, 必须加上StripPrefix=1，否则访问服务时会带上userapi
+        #而不是我们期望的去掉userapi，只保留**部分
+      - id:  customer
+        uri: lb://CUSTOMER-SERVER
+        predicates:
+          - Path=/customer/**
+        filters:
+          - StripPrefix=1
+hystrix:
+  threadpool:
+    default:
+      coreSize: 20 #并发执行的最大线程数，默认10
+      maxQueueSize: 20 #BlockingQueue的最大队列数
+      queueSizeRejectionThreshold: 50 #即使maxQueueSize没有达到，达到queueSizeRejectionThreshold该值后，请求也会被拒绝
+      execution:
+        timeout:
+          enabled: false #关闭熔断器超时检测时间功能，也就是不超时
+        isolation:
+          strategy: THREAD
+          semaphore:
+            maxConcurrentRequests: 1000
+          thread:
+            timeoutInMilliseconds: 200000
+
+#安全配置
+security:
+  basic:
+    enabled: false
+#日志打印配置
+logging:
+  level:
+    org.springframework.cloud.gateway: debug
